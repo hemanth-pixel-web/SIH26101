@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 from werkzeug.security import generate_password_hash
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DATABASE_PATH", BASE_DIR / "skillintel.db"))
 
 def get_conn():
