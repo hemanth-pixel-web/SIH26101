@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillIntel AI Learning Platform</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial, Helvetica, sans-serif; }
+:root{
+  --primary:#2563eb; --primary-dark:#1d4ed8; --secondary:#7c3aed;
+  --success:#16a34a; --warning:#f59e0b; --danger:#dc2626;
+  --bg:#f5f7fb; --card:#ffffff; --text:#172033; --muted:#64748b; --border:#e2e8f0;
+  --sidebar:260px;
+}
+body{ background:var(--bg); color:var(--text); min-height:100vh; }
+
+@keyframes fadeInUp { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+@keyframes popIn { from{opacity:0; transform:scale(.96);} to{opacity:1; transform:scale(1);} }
+@keyframes pulseDot { 0%,100%{ box-shadow:0 0 0 0 rgba(96,165,250,.55);} 50%{ box-shadow:0 0 0 6px rgba(96,165,250,0);} }
+@keyframes fillBar { from{ width:0 !important; } }
+
+.page.active > * { animation: fadeInUp .45s ease both; }
+.page.active .stat-card, .page.active .course-card, .page.active .recommendation { animation: fadeInUp .45s ease both; }
+.page.active .stat-card:nth-child(2){animation-delay:.05s;}
+.page.active .stat-card:nth-child(3){animation-delay:.1s;}
+.page.active .stat-card:nth-child(4){animation-delay:.15s;}
+.page.active .course-card:nth-child(2){animation-delay:.05s;}
+.page.active .course-card:nth-child(3){animation-delay:.1s;}
+.page.active .course-card:nth-child(4){animation-delay:.15s;}
+.page.active .course-card:nth-child(5){animation-delay:.2s;}
+.page.active .course-card:nth-child(6){animation-delay:.25s;}
+
+.login-page{ min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at top left,#dbeafe,transparent 35%), radial-gradient(circle at bottom right,#ede9fe,transparent 35%), #f8fafc; padding:20px; }
+.login-container{ width:100%; max-width:1050px; min-height:650px; display:grid; grid-template-columns:1fr 1fr;
+  background:white; border-radius:25px; overflow:hidden; box-shadow:0 25px 70px rgba(15,23,42,.12); animation:popIn .4s ease; }
+.login-left{ padding:55px; background:linear-gradient(135deg,#1d4ed8,#4f46e5); color:white; display:flex; flex-direction:column; justify-content:center; }
+.logo-big{ width:65px; height:65px; background:rgba(255,255,255,.18); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:30px; margin-bottom:25px; }
+.login-left h1{ font-size:40px; margin-bottom:15px; }
+.login-left p{ font-size:17px; line-height:1.7; opacity:.9; }
+.features{ margin-top:35px; }
+.feature{ display:flex; gap:12px; margin:18px 0; align-items:center; transition:.2s; }
+.feature:hover{ transform:translateX(4px); }
+.feature-icon{ width:35px; height:35px; border-radius:10px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; }
+.login-right{ padding:55px; display:flex; flex-direction:column; justify-content:center; }
+.login-right h2{ font-size:30px; margin-bottom:8px; }
+.login-right .subtitle{ color:var(--muted); margin-bottom:30px; }
+.form-group{ margin-bottom:18px; }
+.form-group label{ display:block; font-size:14px; font-weight:600; margin-bottom:8px; }
+input, select, textarea{ width:100%; border:1px solid var(--border); padding:13px 14px; border-radius:10px; outline:none; font-size:14px; transition:.2s; background:white; }
+input:focus, select:focus, textarea:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+.primary-btn{ border:none; background:var(--primary); color:white; padding:13px 20px; border-radius:10px; cursor:pointer; font-weight:600; transition:.2s; }
+.primary-btn:hover{ background:var(--primary-dark); transform:translateY(-2px); box-shadow:0 8px 18px rgba(37,99,235,.28); }
+.primary-btn:active{ transform:translateY(0); }
+.full-btn{ width:100%; }
+.demo-text{ text-align:center; color:var(--muted); margin-top:18px; font-size:13px; }
+
+.app{ display:none; min-height:100vh; }
+.sidebar{ width:var(--sidebar); height:100vh; position:fixed; left:0; top:0; background:#111827; color:white; padding:20px 14px; z-index:100; overflow-y:auto; }
+.sidebar-logo{ display:flex; align-items:center; gap:12px; padding:12px; margin-bottom:25px; }
+.sidebar-logo-icon{ width:40px; height:40px; background:linear-gradient(135deg,#2563eb,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; }
+.sidebar-logo h2{ font-size:19px; }
+.sidebar-section-title{ color:#94a3b8; font-size:11px; text-transform:uppercase; padding:10px 12px; letter-spacing:1px; }
+.nav-item{ display:flex; align-items:center; gap:13px; padding:12px; margin:5px 0; border-radius:10px; color:#cbd5e1; cursor:pointer; transition:.2s; font-size:14px; }
+.nav-item:hover, .nav-item.active{ background:#1e293b; color:white; }
+.nav-item.active{ border-left:3px solid #60a5fa; }
+.logout{ margin-top:30px; }
+
+.main{ margin-left:var(--sidebar); min-height:100vh; }
+.topbar{ height:75px; background:white; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 30px; position:sticky; top:0; z-index:50; }
+.search{ width:330px; position:relative; }
+.search input{ padding-left:40px; background:#f8fafc; }
+.search-icon{ position:absolute; left:14px; top:13px; }
+.topbar-right{ display:flex; align-items:center; gap:20px; }
+.notification{ position:relative; cursor:pointer; font-size:20px; }
+.notification-dot{ position:absolute; width:7px; height:7px; background:red; border-radius:50%; top:0; right:-2px; animation:pulseDot 1.8s infinite; }
+.user-profile{ display:flex; align-items:center; gap:10px; }
+.avatar{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+.content{ padding:30px; }
+.page{ display:none; }
+.page.active{ display:block; }
+.page-title{ margin-bottom:25px; }
+.page-title h1{ font-size:28px; margin-bottom:7px; }
+.page-title p{ color:var(--muted); }
+
+.welcome{ background:linear-gradient(120deg,#1d4ed8,#6366f1); border-radius:18px; color:white; padding:28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
+.welcome h1{ margin-bottom:8px; }
+.welcome p{ opacity:.85; }
+.ai-status{ background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); padding:15px 20px; border-radius:14px; text-align:center; animation:pulseDot 2.4s infinite; }
+.ai-status strong{ display:block; font-size:20px; }
+
+.stats-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:25px; }
+.stat-card{ background:var(--card); border:1px solid var(--border); padding:20px; border-radius:15px; transition:.25s; }
+.stat-card:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(15,23,42,.08); }
+.stat-top{ display:flex; justify-content:space-between; }
+.stat-icon{ width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:#eff6ff; }
+.stat-number{ font-size:28px; font-weight:bold; margin-top:15px; }
+.stat-label{ color:var(--muted); font-size:13px; margin-top:5px; }
+
+.two-column{ display:grid; grid-template-columns:1.5fr 1fr; gap:20px; }
+.card{ background:white; border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px; }
+.card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.card-header h3{ font-size:17px; }
+.view-link{ color:var(--primary); cursor:pointer; font-size:13px; font-weight:600; }
+
+.course-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.course-card{ background:white; border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:.25s; }
+.course-card:hover{ transform:translateY(-5px); box-shadow:0 14px 32px rgba(15,23,42,.1); }
+.course-image{ height:140px; background:linear-gradient(135deg,#dbeafe,#ede9fe); display:flex; align-items:center; justify-content:center; font-size:45px; }
+.course-body{ padding:18px; }
+.badge{ display:inline-block; padding:5px 9px; background:#eff6ff; color:var(--primary); border-radius:20px; font-size:11px; font-weight:600; }
+.badge.igot{ background:#fff7ed; color:#c2410c; }
+.course-body h3{ margin:12px 0 8px; font-size:16px; }
+.course-body p{ color:var(--muted); font-size:13px; line-height:1.5; min-height:40px; }
+.progress-container{ margin:15px 0; }
+.progress-label{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+.progress-bar{ height:7px; background:#e2e8f0; border-radius:20px; overflow:hidden; }
+.progress-fill{ height:100%; background:linear-gradient(90deg,#2563eb,#7c3aed); border-radius:20px; transition:width .6s ease; }
+.course-actions{ display:flex; gap:8px; }
+.secondary-btn{ border:1px solid var(--border); background:white; color:var(--text); padding:12px 14px; border-radius:10px; cursor:pointer; font-size:13px; font-weight:600; transition:.2s; }
+.secondary-btn:hover{ border-color:var(--primary); color:var(--primary); }
+
+.skill-row{ margin-bottom:20px; }
+.skill-info{ display:flex; justify-content:space-between; margin-bottom:7px; }
+.skill-info span:first-child{ font-weight:600; }
+.skill-score{ color:var(--muted); font-size:13px; }
+.gap-bar{ height:10px; background:#e2e8f0; border-radius:20px; overflow:hidden; }
+.gap-fill{ height:100%; border-radius:20px; transition:width .6s ease; }
+.high{ background:#dc2626; } .medium{ background:#f59e0b; } .low{ background:#16a34a; }
+
+.ai-card{ background:linear-gradient(135deg,#f5f3ff,#eff6ff); border:1px solid #ddd6fe; }
+.ai-label{ color:#6d28d9; font-size:12px; font-weight:bold; margin-bottom:10px; }
+.recommendation{ display:flex; gap:15px; padding:15px 0; border-bottom:1px solid #e2e8f0; transition:.2s; }
+.recommendation:last-child{ border-bottom:none; }
+.recommendation:hover{ background:#f8fafc; }
+.rec-icon{ min-width:45px; height:45px; border-radius:12px; background:white; display:flex; align-items:center; justify-content:center; }
+.rec-content{ flex:1; }
+.rec-content h4{ font-size:14px; margin-bottom:5px; }
+.rec-content p{ color:var(--muted); font-size:12px; }
+.rec-action{ color:var(--primary); font-size:12px; font-weight:bold; cursor:pointer; }
+
+.quiz-layout{ max-width:850px; margin:auto; }
+.quiz-question{ font-size:21px; font-weight:600; line-height:1.5; margin:20px 0; }
+.option{ border:1px solid var(--border); border-radius:12px; padding:15px; margin:10px 0; cursor:pointer; transition:.2s; }
+.option:hover{ border-color:var(--primary); background:#eff6ff; }
+.option.selected{ border-color:var(--primary); background:#eff6ff; }
+.option.correct{ background:#dcfce7; border-color:#16a34a; }
+.option.wrong{ background:#fee2e2; border-color:#dc2626; }
+
+.upload-box{ border:2px dashed #cbd5e1; border-radius:18px; padding:50px 20px; text-align:center; cursor:pointer; transition:.2s; }
+.upload-box:hover{ border-color:var(--primary); background:#f8fbff; }
+.upload-icon{ font-size:50px; margin-bottom:15px; }
+.upload-box h3{ margin-bottom:8px; }
+.upload-box p{ color:var(--muted); margin-bottom:20px; }
+
+.analytics-grid{ display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+.chart{ height:260px; display:flex; align-items:end; gap:15px; padding:20px 10px; border-bottom:1px solid var(--border); }
+.chart-bar{ flex:1; background:linear-gradient(to top,#2563eb,#8b5cf6); border-radius:7px 7px 0 0; min-height:20px; position:relative; transition:height .6s ease; }
+.chart-bar span{ position:absolute; top:-22px; width:100%; text-align:center; font-size:11px; }
+.chart-labels{ display:flex; justify-content:space-around; color:var(--muted); font-size:11px; }
+
+.profile-header{ display:flex; align-items:center; gap:20px; }
+.profile-avatar{ width:80px; height:80px; background:linear-gradient(135deg,#2563eb,#7c3aed); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:30px; font-weight:bold; }
+.profile-info h2{ margin-bottom:5px; }
+.profile-info p{ color:var(--muted); }
+
+.toast{ position:fixed; right:25px; bottom:25px; background:#111827; color:white; padding:15px 20px; border-radius:10px; opacity:0; pointer-events:none; transform:translateY(20px); transition:.3s; z-index:999; }
+.toast.show{ opacity:1; transform:translateY(0); }
+
+.modal{ position:fixed; inset:0; background:rgba(15,23,42,.55); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+.modal.show{ display:flex; }
+.modal-content{ background:white; width:100%; max-width:650px; max-height:90vh; overflow-y:auto; border-radius:18px; padding:25px; animation:popIn .25s ease; }
+.modal-header{ display:flex; justify-content:space-between; margin-bottom:20px; }
+.close{ cursor:pointer; font-size:22px; }
+
+.mobile-menu{ display:none; font-size:24px; cursor:pointer; }
+@media(max-width:1000px){ .stats-grid{grid-template-columns:repeat(2,1fr);} .course-grid{grid-template-columns:repeat(2,1fr);} .two-column,.analytics-grid{grid-template-columns:1fr;} }
+@media(max-width:750px){
+  .sidebar{ transform:translateX(-100%); transition:.3s; }
+  .sidebar.open{ transform:translateX(0); }
+  .main{ margin-left:0; }
+  .mobile-menu{ display:block; }
+  .topbar{ padding:0 15px; }
+  .search{ display:none; }
+  .content{ padding:18px; }
+  .welcome{ flex-direction:column; align-items:flex-start; gap:20px; }
+  .stats-grid{ grid-template-columns:1fr 1fr; }
+  .course-grid{ grid-template-columns:1fr; }
+  .login-container{ grid-template-columns:1fr; }
+  .login-left{ display:none; }
+  .login-right{ padding:35px 25px; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginPage" class="login-page">
+  <div class="login-container">
+    <div class="login-left">
+      <div class="logo-big">🧠</div>
+      <h1>SkillIntel</h1>
+      <p>AI-powered competency development platform designed to identify skill gaps and create personalized learning journeys.</p>
+      <div class="features">
+        <div class="feature"><div class="feature-icon">🤖</div><span>AI-powered skill gap analysis</span></div>
+        <div class="feature"><div class="feature-icon">🎯</div><span>Personalized learning paths</span></div>
+        <div class="feature"><div class="feature-icon">📝</div><span>Automatic AI quiz generation</span></div>
+        <div class="feature"><div class="feature-icon">📊</div><span>Competency progress analytics</span></div>
+        <div class="feature"><div class="feature-icon">🇮🇳</div><span>iGOT Karmayogi ecosystem ready</span></div>
+      </div>
+    </div>
+    <div class="login-right">
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Sign in to continue your learning journey.</p>
+      <form id="loginForm">
+        <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="Enter your email" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Enter your password" required></div>
+        <button class="primary-btn full-btn">Sign In</button>
+      </form>
+      <p class="demo-text">Demo: enter any valid email and password.</p>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><div class="sidebar-logo-icon">🧠</div><h2>SkillIntel</h2></div>
+  <div class="sidebar-section-title">Main</div>
+  <div class="nav-item active" data-page="dashboard">📊<span>Dashboard</span></div>
+  <div class="nav-item" data-page="learning">📚<span>Learning Hub</span></div>
+  <div class="nav-item" data-page="igot">🇮🇳<span>iGOT Karmayogi</span></div>
+  <div class="nav-item" data-page="skills">🧠<span>Skill Gap Analysis</span></div>
+  <div class="nav-item" data-page="quiz">📝<span>AI Quiz Generator</span></div>
+  <div class="sidebar-section-title">Progress</div>
+  <div class="nav-item" data-page="analytics">📈<span>Analytics</span></div>
+  <div class="nav-item" data-page="achievements">🏆<span>Achievements</span></div>
+  <div class="sidebar-section-title">Account</div>
+  <div class="nav-item" data-page="profile">👤<span>Profile</span></div>
+  <div class="nav-item logout" id="logoutBtn">🚪<span>Logout</span></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="mobile-menu" id="mobileMenu">☰</div>
+  <div class="search"><span class="search-icon">🔎</span><input type="text" id="globalSearch" placeholder="Search courses, skills..."></div>
+  <div class="topbar-right">
+    <div class="notification">🔔<span class="notification-dot"></span></div>
+    <div class="user-profile">
+      <div class="avatar" id="topAvatar">P</div>
+      <div><strong id="topUserName">Praveen</strong><small style="display:block;color:#64748b;">Learner</small></div>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+
+<section class="page active" id="dashboard">
+  <div class="welcome">
+    <div>
+      <h1>Welcome back, <span id="welcomeName">Praveen</span> 👋</h1>
+      <p>Continue building your competencies with AI-powered personalized learning.</p>
+    </div>
+    <div class="ai-status"><strong>🤖 AI Active</strong><small>Learning path optimized</small></div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-top"><span>Learning Hours</span><div class="stat-icon">⏱️</div></div><div class="stat-number" id="hoursStat">24.5</div><div class="stat-label">+12% this month</div></div>
+    <div class="stat-card"><div class="stat-top"><span>Courses Completed</span><div class="stat-icon">📚</div></div><div class="stat-number" id="coursesStat">8</div><div class="stat-label">Out of <span id="totalCoursesStat">15</span> assigned</div></div>
+    <div class="stat-card"><div class="stat-top"><span>Competency Score</span><div class="stat-icon">🎯</div></div><div class="stat-number" id="scoreStat">72%</div><div class="stat-label">+8% improvement</div></div>
+    <div class="stat-card"><div class="stat-top"><span>AI Quizzes</span><div class="stat-icon">📝</div></div><div class="stat-number" id="quizStat">14</div><div class="stat-label">86% average score</div></div>
+  </div>
+
+  <div class="two-column">
+    <div>
+      <div class="card">
+        <div class="card-header"><h3>Continue Learning</h3><span class="view-link" data-page-link="learning">View All</span></div>
+        <div id="continueLearningList"></div>
+      </div>
+      <div class="card ai-card">
+        <div class="ai-label">✨ AI PERSONALIZED RECOMMENDATION</div>
+        <h3 style="margin-bottom:10px;">Your next best learning action</h3>
+        <p style="color:#64748b;font-size:14px;line-height:1.6;">Based on your recent assessment, you should strengthen <strong>Data Visualization</strong> before moving to Advanced Analytics.</p>
+        <button class="primary-btn" style="margin-top:15px;" onclick="openCourse('data-viz')">Start Recommended Training</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-header"><h3>Competency Overview</h3><span class="view-link" onclick="navigate('skills')">Analyze</span></div>
+        <div class="skill-row"><div class="skill-info"><span>Data Analysis</span><span class="skill-score">82%</span></div><div class="gap-bar"><div class="gap-fill low" style="width:82%"></div></div></div>
+        <div class="skill-row"><div class="skill-info"><span>Data Visualization</span><span class="skill-score">54%</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:54%"></div></div></div>
+        <div class="skill-row"><div class="skill-info"><span>Statistical Methods</span><span class="skill-score">46%</span></div><div class="gap-bar"><div class="gap-fill high" style="width:46%"></div></div></div>
+        <div class="skill-row"><div class="skill-info"><span>Python</span><span class="skill-score">71%</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:71%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="learning">
+  <div class="page-title"><h1>Learning Hub 📚</h1><p>AI-curated courses based on your competency gaps.</p></div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;">
+      <input id="courseSearch" placeholder="Search courses...">
+      <select id="categoryFilter">
+        <option value="all">All Categories</option>
+        <option value="data">Data & Statistics</option>
+        <option value="technology">Technology</option>
+        <option value="management">Management</option>
+      </select>
+      <select id="levelFilter">
+        <option value="all">All Levels</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+  </div>
+  <div class="course-grid" id="courseGrid"></div>
+</section>
+
+<section class="page" id="igot">
+  <div class="page-title"><h1>iGOT Karmayogi 🇮🇳</h1><p>Courses from India's Official Statistical System learning ecosystem, linked to your SkillIntel profile.</p></div>
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h3 style="margin-bottom:6px;">Account status</h3>
+      <p style="color:#64748b;font-size:14px;" id="igotStatusText">Not connected — connect to sync progress both ways.</p>
+    </div>
+    <button class="primary-btn" onclick="connectIGOT()" id="igotConnectBtn">Connect iGOT Account</button>
+  </div>
+  <div class="course-grid" id="igotGrid"></div>
+</section>
+
+<section class="page" id="skills">
+  <div class="page-title"><h1>AI Skill Gap Analysis 🧠</h1><p>AI analyzes your assessment results and identifies competency areas that require improvement.</p></div>
+  <div class="card ai-card">
+    <div class="ai-label">🤖 AI ANALYSIS COMPLETE</div>
+    <h2 style="margin-bottom:10px;">Overall Competency: 72%</h2>
+    <p style="color:#64748b;">Your strongest competency is Data Analysis. Your largest development opportunity is Statistical Methods.</p>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Competency Assessment</h3><button class="primary-btn" onclick="runAnalysis()">🔄 Run AI Analysis</button></div>
+    <div class="skill-row"><div class="skill-info"><span>Data Analysis</span><span class="skill-score">82% — Strong</span></div><div class="gap-bar"><div class="gap-fill low" style="width:82%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Data Visualization</span><span class="skill-score">54% — Needs Improvement</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:54%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Statistical Methods</span><span class="skill-score">46% — Critical Gap</span></div><div class="gap-bar"><div class="gap-fill high" style="width:46%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Python</span><span class="skill-score">71% — Moderate</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:71%"></div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>🎯 AI-Generated Learning Path</h3></div>
+    <div class="recommendation"><div class="rec-icon">1</div><div class="rec-content"><h4>Statistical Methods Fundamentals</h4><p>Priority: High • Estimated time: 6 hours</p></div><span class="badge" onclick="openCourse('stats-methods')" style="cursor:pointer;">HIGH</span></div>
+    <div class="recommendation"><div class="rec-icon">2</div><div class="rec-content"><h4>Data Visualization</h4><p>Priority: Medium • Estimated time: 4 hours</p></div><span class="badge" onclick="openCourse('data-viz')" style="cursor:pointer;">MEDIUM</span></div>
+    <div class="recommendation"><div class="rec-icon">3</div><div class="rec-content"><h4>Advanced Python Analytics</h4><p>Priority: Medium • Estimated time: 5 hours</p></div><span class="badge" onclick="openCourse('python-stats')" style="cursor:pointer;">MEDIUM</span></div>
+  </div>
+</section>
+
+<section class="page" id="quiz">
+  <div class="page-title"><h1>AI Quiz & MCQ Generator 📝</h1><p>Upload learning material and generate competency-based questions.</p></div>
+  <div class="card">
+    <div class="upload-box" id="uploadBox">
+      <div class="upload-icon">📄</div>
+      <h3>Upload Learning Material</h3>
+      <p>PDF, DOCX, TXT or other learning materials</p>
+      <input type="file" id="fileInput" hidden accept=".pdf,.doc,.docx,.txt">
+      <button class="primary-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+      <p id="fileName" style="margin-top:15px;"></p>
+    </div>
+    <div style="margin-top:25px;">
+      <div class="form-group"><label>Number of Questions</label><select id="questionCount"><option value="5">5 Questions</option><option value="10">10 Questions</option><option value="15">15 Questions</option></select></div>
+      <div class="form-group"><label>Difficulty</label><select id="difficulty"><option>Beginner</option><option selected>Intermediate</option><option>Advanced</option></select></div>
+      <button class="primary-btn full-btn" onclick="generateQuiz()">🤖 Generate AI Quiz</button>
+    </div>
+  </div>
+  <div id="quizArea" style="display:none;">
+    <div class="quiz-layout">
+      <div class="card">
+        <div class="card-header"><h3>AI Generated Quiz</h3><span id="quizProgress">Question 1</span></div>
+        <div id="questionContainer"></div>
+        <button class="primary-btn" id="nextQuestion" onclick="nextQuestion()">Next Question →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="analytics">
+  <div class="page-title"><h1>Learning Analytics 📈</h1><p>Track your learning performance and competency growth.</p></div>
+  <div class="analytics-grid">
+    <div class="card">
+      <div class="card-header"><h3>Weekly Learning Hours</h3><select style="width:120px;"><option>This Week</option><option>This Month</option></select></div>
+      <div class="chart">
+        <div class="chart-bar" style="height:35%"><span>2h</span></div>
+        <div class="chart-bar" style="height:55%"><span>3h</span></div>
+        <div class="chart-bar" style="height:45%"><span>2.5h</span></div>
+        <div class="chart-bar" style="height:75%"><span>4h</span></div>
+        <div class="chart-bar" style="height:65%"><span>3.5h</span></div>
+        <div class="chart-bar" style="height:90%"><span>5h</span></div>
+        <div class="chart-bar" style="height:70%"><span>4h</span></div>
+      </div>
+      <div class="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Overall Progress</h3></div>
+      <div style="text-align:center;padding:25px;"><div style="font-size:50px;font-weight:bold;color:#2563eb;">72%</div><p style="color:#64748b;">Competency Score</p></div>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:15px 0;">
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Courses</span><strong>8 / 15</strong></p>
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Quizzes</span><strong>14</strong></p>
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Learning Hours</span><strong>24.5h</strong></p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Competency Growth</h3></div>
+    <div class="skill-row"><div class="skill-info"><span>Data Analysis</span><span>82%</span></div><div class="gap-bar"><div class="gap-fill low" style="width:82%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Python</span><span>71%</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:71%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Data Visualization</span><span>54%</span></div><div class="gap-bar"><div class="gap-fill medium" style="width:54%"></div></div></div>
+    <div class="skill-row"><div class="skill-info"><span>Statistical Methods</span><span>46%</span></div><div class="gap-bar"><div class="gap-fill high" style="width:46%"></div></div></div>
+  </div>
+</section>
+
+<section class="page" id="achievements">
+  <div class="page-title"><h1>Achievements 🏆</h1><p>Milestones earned throughout your learning journey.</p></div>
+  <div class="course-grid">
+    <div class="card" style="text-align:center;"><div style="font-size:55px;">🥇</div><h3 style="margin:15px 0 8px;">Fast Learner</h3><p style="color:#64748b;">Completed 5 courses within one month.</p></div>
+    <div class="card" style="text-align:center;"><div style="font-size:55px;">🎯</div><h3 style="margin:15px 0 8px;">Skill Builder</h3><p style="color:#64748b;">Improved competency score by 10%.</p></div>
+    <div class="card" style="text-align:center;"><div style="font-size:55px;">🧠</div><h3 style="margin:15px 0 8px;">AI Explorer</h3><p style="color:#64748b;">Generated and completed 10 AI quizzes.</p></div>
+    <div class="card" style="text-align:center;"><div style="font-size:55px;">📚</div><h3 style="margin:15px 0 8px;">Knowledge Seeker</h3><p style="color:#64748b;">Completed 20 hours of learning.</p></div>
+  </div>
+</section>
+
+<section class="page" id="profile">
+  <div class="page-title"><h1>My Profile 👤</h1><p>Manage your learning profile and preferences.</p></div>
+  <div class="card"><div class="profile-header"><div class="profile-avatar" id="profileAvatar">P</div><div class="profile-info"><h2 id="profileName">Praveen Kumar</h2><p>Learner • Statistical & Data Analysis</p></div></div></div>
+  <div class="card">
+    <div class="card-header"><h3>Personal Information</h3></div>
+    <div class="form-group"><label>Full Name</label><input id="profileFullName" value="Praveen Kumar"></div>
+    <div class="form-group"><label>Email</label><input id="profileEmail" type="email" value="learner@example.com"></div>
+    <div class="form-group"><label>Department</label><input value="Statistical Analysis"></div>
+    <div class="form-group"><label>Learning Goal</label><textarea rows="4">Improve statistical analysis, data visualization and Python skills.</textarea></div>
+    <button class="primary-btn" onclick="saveProfile()">Save Changes</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>🇮🇳 iGOT Karmayogi Integration</h3></div>
+    <p style="color:#64748b;line-height:1.7;margin-bottom:15px;">Your SkillIntel profile can be connected with the iGOT Karmayogi ecosystem to synchronize relevant learning resources, competency data and recommended training.</p>
+    <button class="primary-btn" onclick="navigate('igot')">Go to iGOT Karmayogi</button>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="courseModal">
+  <div class="modal-content">
+    <div class="modal-header"><h2 id="modalCourseTitle">Course</h2><span class="close" onclick="closeModal()">✕</span></div>
+    <p style="color:#64748b;line-height:1.7;margin-bottom:20px;" id="modalCourseDesc"></p>
+    <div id="modalModules"></div>
+    <div class="progress-container">
+      <div class="progress-label"><span>Your progress</span><span id="modalProgressLabel">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="modalProgressFill" style="width:0%"></div></div>
+    </div>
+    <button class="primary-btn full-btn" onclick="completeCourse()">Mark Course as Completed</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   COURSE DATA — single source of truth so cards, dashboard,
+   modal and iGOT page all read the same records.
+========================================================= */
+const COURSES = [
+  { id:"data-viz", name:"Data Visualization Fundamentals", icon:"📊", category:"data", level:"intermediate", badge:"Recommended", desc:"Learn charts, dashboards and effective data storytelling.", progress:54 },
+  { id:"stats-methods", name:"Advanced Statistical Methods", icon:"📈", category:"data", level:"advanced", badge:"High Priority", desc:"Master statistical inference, regression and hypothesis testing.", progress:30 },
+  { id:"python-stats", name:"Python for Statistical Analysis", icon:"🐍", category:"technology", level:"intermediate", badge:"AI Recommended", desc:"Use Python for statistical computing and data analysis.", progress:42 },
+  { id:"leadership", name:"Leadership & Team Management", icon:"👥", category:"management", level:"beginner", badge:"Beginner", desc:"Develop communication, leadership and team management capabilities.", progress:0 },
+  { id:"digital-gov", name:"Digital Governance Essentials", icon:"🇮🇳", category:"technology", level:"beginner", badge:"Governance", desc:"Understand digital transformation and public-sector technology.", progress:0 },
+  { id:"excel", name:"Excel for Data Analysis", icon:"📗", category:"data", level:"beginner", badge:"Popular", desc:"Learn spreadsheets, formulas, pivot tables and data analysis techniques.", progress:0 },
+  { id:"sql-basics", name:"SQL for Official Statistics", icon:"🗄️", category:"technology", level:"beginner", badge:"Foundational", desc:"Filter, join and aggregate statistical datasets with SQL.", progress:0 },
+  { id:"data-quality", name:"Data Quality & Validation", icon:"✅", category:"data", level:"intermediate", badge:"Recommended", desc:"Apply accuracy, consistency and validation checks to survey data.", progress:0 },
+  { id:"survey-design", name:"Survey & Sampling Design", icon:"📋", category:"data", level:"intermediate", badge:"Core Skill", desc:"Design sampling frames and questionnaires that produce reliable data.", progress:0 },
+  { id:"ai-ethics", name:"Responsible AI in the Public Sector", icon:"🤝", category:"technology", level:"beginner", badge:"New", desc:"Apply human oversight, transparency and bias-awareness to AI tools.", progress:0 },
+  { id:"comm-skills", name:"Communicating Data to Policymakers", icon:"🗣️", category:"management", level:"intermediate", badge:"Popular", desc:"Turn statistical findings into clear briefs and presentations.", progress:0 },
+  { id:"project-mgmt", name:"Project Management for Statistical Offices", icon:"🗂️", category:"management", level:"advanced", badge:"Advanced", desc:"Plan and deliver data collection projects on time and on budget.", progress:0 }
+];
+
+const IGOT_COURSES = [
+  { id:"igot-ns", name:"National Statistical System Orientation", icon:"🏛️", desc:"Foundational course on India's Official Statistical System, from MoSPI's iGOT catalogue.", link:"#" },
+  { id:"igot-ethics", name:"Ethics in Public Service", icon:"⚖️", desc:"Core Karmayogi Bharat module on integrity and conduct for government officers.", link:"#" },
+  { id:"igot-digital", name:"Digital India Fundamentals", icon:"🌐", desc:"Overview of Digital India initiatives relevant to statistical data collection.", link:"#" },
+  { id:"igot-rti", name:"RTI & Data Transparency", icon:"📜", desc:"How the Right to Information Act intersects with official data release.", link:"#" },
+  { id:"igot-census", name:"Census Operations Essentials", icon:"🧮", desc:"Field methodology and enumeration standards used in national census work.", link:"#" }
+];
+
+let currentUser = localStorage.getItem("skillintelUser") || "";
+let progressStore = JSON.parse(localStorage.getItem("skillintelProgress") || "{}");
+let igotConnected = localStorage.getItem("skillintelIgot") === "1";
+let activeCourseId = null;
+let quizQuestions = [];
+let currentQuestion = 0;
+let quizScore = 0;
+
+function getProgress(course){
+  return progressStore.hasOwnProperty(course.id) ? progressStore[course.id] : course.progress;
+}
+function setProgress(id, value){
+  progressStore[id] = value;
+  localStorage.setItem("skillintelProgress", JSON.stringify(progressStore));
+}
+
+/* ---------- LOGIN ---------- */
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  if(!email){ showToast("Please enter your email."); return; }
+  currentUser = email;
+  localStorage.setItem("skillintelUser", email);
+  const name = email.split("@")[0].replace(/[._-]/g," ");
+  const formattedName = name.split(" ").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+  localStorage.setItem("skillintelName", formattedName);
+  loadApplication();
+  showToast("Welcome to SkillIntel AI Learning Platform!");
+});
+
+function loadApplication(){
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  const savedName = localStorage.getItem("skillintelName") || "Praveen";
+  document.getElementById("welcomeName").textContent = savedName;
+  document.getElementById("topUserName").textContent = savedName;
+  document.getElementById("profileName").textContent = savedName;
+  document.getElementById("profileFullName").value = savedName;
+  const initial = savedName.charAt(0).toUpperCase();
+  document.getElementById("topAvatar").textContent = initial;
+  document.getElementById("profileAvatar").textContent = initial;
+  renderCourseGrid();
+  renderIgotGrid();
+  renderContinueLearning();
+  updateIgotStatus();
+}
+if(currentUser){ loadApplication(); }
+
+/* ---------- NAVIGATION ---------- */
+document.querySelectorAll(".nav-item[data-page]").forEach(item=>{
+  item.addEventListener("click", function(){ navigate(this.getAttribute("data-page")); });
+});
+function navigate(pageName){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const target = document.getElementById(pageName);
+  if(target) target.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(i=>i.classList.remove("active"));
+  const selected = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+  if(selected) selected.classList.add("active");
+  document.getElementById("sidebar").classList.remove("open");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.querySelectorAll("[data-page-link]").forEach(link=>{
+  link.addEventListener("click", function(){ navigate(this.getAttribute("data-page-link")); });
+});
+
+document.getElementById("logoutBtn").addEventListener("click", function(){
+  localStorage.removeItem("skillintelUser");
+  localStorage.removeItem("skillintelName");
+  currentUser = "";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginPage").style.display = "flex";
+  showToast("You have been logged out.");
+});
+
+const mobileMenu = document.getElementById("mobileMenu");
+if(mobileMenu){ mobileMenu.addEventListener("click", ()=> document.getElementById("sidebar").classList.toggle("open")); }
+
+/* ---------- COURSE RENDERING (Learning Hub) ---------- */
+function courseCardHTML(course){
+  const pct = getProgress(course);
+  const btnLabel = pct >= 100 ? "Review Course" : (pct > 0 ? "Continue Learning" : "Start Course");
+  return `
+    <div class="course-card" data-category="${course.category}" data-level="${course.level}" data-name="${course.name.toLowerCase()}">
+      <div class="course-image">${course.icon}</div>
+      <div class="course-body">
+        <span class="badge">${course.badge}</span>
+        <h3>${course.name}</h3>
+        <p>${course.desc}</p>
+        <div class="progress-container">
+          <div class="progress-label"><span>Progress</span><span>${pct}%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="course-actions">
+          <button class="primary-btn full-btn" onclick="openCourse('${course.id}')">${btnLabel}</button>
+        </div>
+      </div>
+    </div>`;
+}
+function renderCourseGrid(){
+  document.getElementById("courseGrid").innerHTML = COURSES.map(courseCardHTML).join("");
+  applyCourseFilters();
+}
+function renderIgotGrid(){
+  document.getElementById("igotGrid").innerHTML = IGOT_COURSES.map(c => `
+    <div class="course-card">
+      <div class="course-image">${c.icon}</div>
+      <div class="course-body">
+        <span class="badge igot">iGOT Karmayogi</span>
+        <h3>${c.name}</h3>
+        <p>${c.desc}</p>
+        <div class="course-actions">
+          <button class="primary-btn full-btn" onclick="openIgotCourse('${c.id}')">${igotConnected ? "Open in iGOT" : "Connect & Enroll"}</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+function openIgotCourse(id){
+  if(!igotConnected){
+    connectIGOT();
+    return;
+  }
+  showToast("Opening iGOT Karmayogi course...");
+}
+function updateIgotStatus(){
+  const btn = document.getElementById("igotConnectBtn");
+  const text = document.getElementById("igotStatusText");
+  if(igotConnected){
+    btn.textContent = "Connected ✓";
+    text.textContent = "Connected — progress syncs with your Karmayogi Bharat profile.";
+  } else {
+    btn.textContent = "Connect iGOT Account";
+    text.textContent = "Not connected — connect to sync progress both ways.";
+  }
+  renderIgotGrid();
+}
+function connectIGOT(){
+  igotConnected = true;
+  localStorage.setItem("skillintelIgot","1");
+  updateIgotStatus();
+  showToast("iGOT Karmayogi account connected.");
+}
+
+function renderContinueLearning(){
+  const inProgress = COURSES.filter(c => getProgress(c) > 0 && getProgress(c) < 100)
+    .sort((a,b)=> getProgress(b)-getProgress(a)).slice(0,2);
+  const list = inProgress.length ? inProgress : COURSES.slice(0,2);
+  document.getElementById("continueLearningList").innerHTML = list.map(c => {
+    const pct = getProgress(c);
+    return `
+    <div class="recommendation">
+      <div class="rec-icon">${c.icon}</div>
+      <div class="rec-content">
+        <h4>${c.name}</h4>
+        <p>${pct}% completed</p>
+        <div class="progress-container"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+      </div>
+      <span class="rec-action" onclick="openCourse('${c.id}')">Continue</span>
+    </div>`;
+  }).join("");
+}
+
+/* filters */
+function applyCourseFilters(){
+  const search = (document.getElementById("courseSearch")?.value || "").toLowerCase();
+  const cat = document.getElementById("categoryFilter")?.value || "all";
+  const level = document.getElementById("levelFilter")?.value || "all";
+  document.querySelectorAll("#courseGrid .course-card").forEach(card=>{
+    const matchesSearch = card.dataset.name.includes(search);
+    const matchesCat = cat==="all" || card.dataset.category===cat;
+    const matchesLevel = level==="all" || card.dataset.level===level;
+    card.style.display = (matchesSearch && matchesCat && matchesLevel) ? "" : "none";
+  });
+}
+["courseSearch"].forEach(id=>{
+  document.addEventListener("input", e=>{ if(e.target && e.target.id===id) applyCourseFilters(); });
+});
+document.addEventListener("change", e=>{
+  if(e.target && (e.target.id==="categoryFilter" || e.target.id==="levelFilter")) applyCourseFilters();
+});
+
+/* ---------- MODAL ---------- */
+function openCourse(id){
+  const course = COURSES.find(c=>c.id===id);
+  if(!course) return;
+  activeCourseId = id;
+  const pct = getProgress(course);
+  document.getElementById("modalCourseTitle").textContent = course.name;
+  document.getElementById("modalCourseDesc").textContent = "Welcome to " + course.name + ". This course has been selected by the AI engine based on your competency profile. " + course.desc;
+  document.getElementById("modalModules").innerHTML = `
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 1</h3><p style="color:#64748b;">Introduction and fundamental concepts</p></div>
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 2</h3><p style="color:#64748b;">Practical applications and examples</p></div>
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 3</h3><p style="color:#64748b;">Assessment and competency evaluation</p></div>`;
+  document.getElementById("modalProgressLabel").textContent = pct + "%";
+  document.getElementById("modalProgressFill").style.width = pct + "%";
+  document.getElementById("courseModal").classList.add("show");
+}
+function closeModal(){ document.getElementById("courseModal").classList.remove("show"); }
+function completeCourse(){
+  if(!activeCourseId) return;
+  setProgress(activeCourseId, 100);
+  renderCourseGrid();
+  renderContinueLearning();
+  closeModal();
+  showToast("Course marked as completed!");
+}
+
+/* ---------- MISC ACTIONS ---------- */
+function runAnalysis(){ showToast("AI is re-analyzing your competencies..."); }
+function saveProfile(){ showToast("Profile updated successfully."); }
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> toast.classList.remove("show"), 2600);
+}
+
+/* ---------- QUIZ (demo generator kept from original) ---------- */
+const SAMPLE_QUESTIONS = [
+  { q:"Which measure is least affected by an outlier?", options:["Mean","Median","Range","Variance"], answer:1 },
+  { q:"Which chart best compares values across categories?", options:["Bar chart","Pie only","Line only","None"], answer:0 },
+  { q:"Which Python library is used for tabular data?", options:["pandas","turtle","tkinter","pygame"], answer:0 },
+  { q:"Which SQL clause filters rows before grouping?", options:["WHERE","HAVING","ORDER BY","GROUP"], answer:0 },
+  { q:"Official statistics primarily provide what?", options:["Trusted evidence for policy","Entertainment","Ads","Opinions"], answer:0 }
+];
+document.getElementById("fileInput").addEventListener("change", function(){
+  if(this.files[0]) document.getElementById("fileName").textContent = "Selected: " + this.files[0].name;
+});
+function generateQuiz(){
+  const count = parseInt(document.getElementById("questionCount").value,10);
+  quizQuestions = [];
+  for(let i=0;i<count;i++){ quizQuestions.push(SAMPLE_QUESTIONS[i % SAMPLE_QUESTIONS.length]); }
+  currentQuestion = 0;
+  quizScore = 0;
+  document.getElementById("quizArea").style.display = "block";
+  renderQuestion();
+  showToast("AI quiz generated.");
+}
+function renderQuestion(){
+  const q = quizQuestions[currentQuestion];
+  document.getElementById("quizProgress").textContent = `Question ${currentQuestion+1} of ${quizQuestions.length}`;
+  document.getElementById("questionContainer").innerHTML = `
+    <div class="quiz-question">${q.q}</div>
+    ${q.options.map((opt,i)=>`<div class="option" onclick="selectOption(${i})" data-index="${i}">${opt}</div>`).join("")}
+  `;
+}
+function selectOption(i){
+  const q = quizQuestions[currentQuestion];
+  document.querySelectorAll(".option").forEach((el,idx)=>{
+    el.classList.remove("selected");
+    if(idx===q.answer) el.classList.add("correct");
+    else if(idx===i) el.classList.add("wrong");
+  });
+  if(i===q.answer) quizScore++;
+}
+function nextQuestion(){
+  if(currentQuestion < quizQuestions.length-1){
+    currentQuestion++;
+    renderQuestion();
+  } else {
+    showToast(`Quiz complete — ${quizScore}/${quizQuestions.length} correct.`);
+    document.getElementById("quizArea").style.display = "none";
+  }
+}
+</script>
+</body>
+</html>
