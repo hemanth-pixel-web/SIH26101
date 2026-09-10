@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillIntel — AI Learning Platform</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
+:root{
+  --primary:#2563eb; --primary-dark:#1d4ed8; --secondary:#7c3aed;
+  --success:#16a34a; --warning:#f59e0b; --danger:#dc2626;
+  --bg:#f5f7fb; --card:#ffffff; --text:#172033; --muted:#64748b; --border:#e2e8f0;
+  --sidebar:260px;
+}
+body{ background:var(--bg); color:var(--text); min-height:100vh; }
+
+@keyframes fadeInUp { from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);} }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+@keyframes popIn { from{opacity:0; transform:scale(.94);} to{opacity:1; transform:scale(1);} }
+@keyframes slideInRight { from{opacity:0; transform:translateX(24px);} to{opacity:1; transform:translateX(0);} }
+@keyframes pulseDot { 0%,100%{ box-shadow:0 0 0 0 rgba(96,165,250,.55);} 50%{ box-shadow:0 0 0 6px rgba(96,165,250,0);} }
+@keyframes shimmer { 0%{ background-position:-400px 0;} 100%{ background-position:400px 0;} }
+@keyframes float { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+@keyframes spin { to{ transform:rotate(360deg); } }
+@keyframes bounceIn { 0%{opacity:0; transform:scale(.7);} 60%{opacity:1; transform:scale(1.05);} 100%{transform:scale(1);} }
+@keyframes progressGlow { 0%,100%{ filter:brightness(1);} 50%{ filter:brightness(1.25);} }
+
+.page.active > * { animation: fadeInUp .5s ease both; }
+.page.active .stat-card, .page.active .course-card, .page.active .recommendation { animation: fadeInUp .5s ease both; }
+.page.active .stat-card:nth-child(1){animation-delay:0s;}
+.page.active .stat-card:nth-child(2){animation-delay:.06s;}
+.page.active .stat-card:nth-child(3){animation-delay:.12s;}
+.page.active .stat-card:nth-child(4){animation-delay:.18s;}
+.page.active .course-card:nth-child(1){animation-delay:0s;}
+.page.active .course-card:nth-child(2){animation-delay:.05s;}
+.page.active .course-card:nth-child(3){animation-delay:.1s;}
+.page.active .course-card:nth-child(4){animation-delay:.15s;}
+.page.active .course-card:nth-child(5){animation-delay:.2s;}
+.page.active .course-card:nth-child(6){animation-delay:.25s;}
+.page.active .course-card:nth-child(7){animation-delay:.3s;}
+.page.active .course-card:nth-child(8){animation-delay:.35s;}
+.float-icon{ animation: float 3.5s ease-in-out infinite; display:inline-block; }
+.spin-icon{ animation: spin 1s linear infinite; display:inline-block; }
+
+.login-page{ min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at top left,#dbeafe,transparent 35%), radial-gradient(circle at bottom right,#ede9fe,transparent 35%), #f8fafc; padding:20px; }
+.login-container{ width:100%; max-width:1050px; min-height:650px; display:grid; grid-template-columns:1fr 1fr;
+  background:white; border-radius:25px; overflow:hidden; box-shadow:0 25px 70px rgba(15,23,42,.14); animation:popIn .45s ease; }
+.login-left{ padding:55px; background:linear-gradient(135deg,#1d4ed8,#4f46e5); color:white; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+.login-left::before{ content:''; position:absolute; width:280px; height:280px; border-radius:50%; background:rgba(255,255,255,.08); top:-90px; right:-90px; animation:float 6s ease-in-out infinite; }
+.login-left::after{ content:''; position:absolute; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-60px; left:-60px; animation:float 7s ease-in-out infinite reverse; }
+.logo-big{ width:65px; height:65px; background:rgba(255,255,255,.18); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:30px; margin-bottom:25px; animation:float 4s ease-in-out infinite; position:relative; z-index:1; }
+.login-left h1{ font-size:40px; margin-bottom:15px; position:relative; z-index:1; }
+.login-left p{ font-size:17px; line-height:1.7; opacity:.9; position:relative; z-index:1; }
+.features{ margin-top:35px; position:relative; z-index:1; }
+.feature{ display:flex; gap:12px; margin:18px 0; align-items:center; transition:.2s; }
+.feature:hover{ transform:translateX(6px); }
+.feature-icon{ width:35px; height:35px; border-radius:10px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; }
+.login-right{ padding:55px; display:flex; flex-direction:column; justify-content:center; overflow-y:auto; max-height:90vh; }
+.login-right h2{ font-size:30px; margin-bottom:8px; }
+.login-right .subtitle{ color:var(--muted); margin-bottom:26px; }
+.form-group{ margin-bottom:16px; }
+.form-group label{ display:block; font-size:14px; font-weight:600; margin-bottom:8px; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+input, select, textarea{ width:100%; border:1px solid var(--border); padding:13px 14px; border-radius:10px; outline:none; font-size:14px; transition:.2s; background:white; }
+input:focus, select:focus, textarea:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+.primary-btn{ border:none; background:var(--primary); color:white; padding:13px 20px; border-radius:10px; cursor:pointer; font-weight:600; transition:.2s; font-size:14px; position:relative; overflow:hidden; }
+.primary-btn:hover{ background:var(--primary-dark); transform:translateY(-2px); box-shadow:0 8px 18px rgba(37,99,235,.28); }
+.primary-btn:active{ transform:translateY(0); }
+.primary-btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+.full-btn{ width:100%; }
+.auth-toggle{ display:flex; gap:8px; margin-bottom:22px; background:#f1f5f9; padding:5px; border-radius:12px; }
+.auth-toggle button{ flex:1; border:none; background:transparent; padding:10px; border-radius:9px; cursor:pointer; font-weight:600; color:var(--muted); transition:.2s; font-size:14px; }
+.auth-toggle button.active{ background:white; color:var(--primary); box-shadow:0 2px 8px rgba(15,23,42,.08); }
+.demo-text{ text-align:center; color:var(--muted); margin-top:16px; font-size:13px; }
+.auth-error{ background:#fee2e2; color:#b91c1c; padding:11px 14px; border-radius:10px; font-size:13px; margin-bottom:14px; display:none; animation:fadeInUp .3s ease; }
+.auth-error.show{ display:block; }
+.auth-form{ display:none; }
+.auth-form.active{ display:block; animation:fadeIn .35s ease; }
+
+.app{ display:none; min-height:100vh; }
+.sidebar{ width:var(--sidebar); height:100vh; position:fixed; left:0; top:0; background:#111827; color:white; padding:20px 14px; z-index:100; overflow-y:auto; }
+.sidebar-logo{ display:flex; align-items:center; gap:12px; padding:12px; margin-bottom:25px; }
+.sidebar-logo-icon{ width:40px; height:40px; background:linear-gradient(135deg,#2563eb,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; }
+.sidebar-logo h2{ font-size:19px; }
+.sidebar-section-title{ color:#94a3b8; font-size:11px; text-transform:uppercase; padding:10px 12px; letter-spacing:1px; }
+.nav-item{ display:flex; align-items:center; gap:13px; padding:12px; margin:5px 0; border-radius:10px; color:#cbd5e1; cursor:pointer; transition:.2s; font-size:14px; }
+.nav-item:hover{ background:#1e293b; color:white; transform:translateX(3px); }
+.nav-item.active{ background:#1e293b; color:white; border-left:3px solid #60a5fa; }
+.logout{ margin-top:30px; }
+
+.main{ margin-left:var(--sidebar); min-height:100vh; }
+.topbar{ height:75px; background:white; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 30px; position:sticky; top:0; z-index:50; }
+.search{ width:330px; position:relative; }
+.search input{ padding-left:40px; background:#f8fafc; }
+.search-icon{ position:absolute; left:14px; top:13px; }
+.topbar-right{ display:flex; align-items:center; gap:20px; }
+.notification{ position:relative; cursor:pointer; font-size:20px; }
+.notification-dot{ position:absolute; width:7px; height:7px; background:red; border-radius:50%; top:0; right:-2px; animation:pulseDot 1.8s infinite; }
+.user-profile{ display:flex; align-items:center; gap:10px; }
+.avatar{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+.content{ padding:30px; }
+.page{ display:none; }
+.page.active{ display:block; }
+.page-title{ margin-bottom:25px; }
+.page-title h1{ font-size:28px; margin-bottom:7px; }
+.page-title p{ color:var(--muted); }
+
+.welcome{ background:linear-gradient(120deg,#1d4ed8,#6366f1); border-radius:18px; color:white; padding:28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; position:relative; overflow:hidden; }
+.welcome::before{ content:''; position:absolute; width:220px; height:220px; background:rgba(255,255,255,.08); border-radius:50%; top:-100px; right:60px; animation:float 5s ease-in-out infinite; }
+.welcome h1{ margin-bottom:8px; position:relative; z-index:1; }
+.welcome p{ opacity:.85; position:relative; z-index:1; }
+.ai-status{ background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); padding:15px 20px; border-radius:14px; text-align:center; animation:pulseDot 2.4s infinite; position:relative; z-index:1; }
+.ai-status strong{ display:block; font-size:20px; }
+
+.stats-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:25px; }
+.stat-card{ background:var(--card); border:1px solid var(--border); padding:20px; border-radius:15px; transition:.25s; }
+.stat-card:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(15,23,42,.08); }
+.stat-top{ display:flex; justify-content:space-between; }
+.stat-icon{ width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:#eff6ff; }
+.stat-number{ font-size:28px; font-weight:bold; margin-top:15px; }
+.stat-label{ color:var(--muted); font-size:13px; margin-top:5px; }
+
+.two-column{ display:grid; grid-template-columns:1.5fr 1fr; gap:20px; }
+.card{ background:white; border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px; }
+.card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.card-header h3{ font-size:17px; }
+.view-link{ color:var(--primary); cursor:pointer; font-size:13px; font-weight:600; }
+
+.course-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.course-card{ background:white; border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:.25s; }
+.course-card:hover{ transform:translateY(-6px); box-shadow:0 16px 34px rgba(15,23,42,.12); }
+.course-image{ height:140px; background:linear-gradient(135deg,#dbeafe,#ede9fe); display:flex; align-items:center; justify-content:center; font-size:45px; }
+.course-body{ padding:18px; }
+.badge{ display:inline-block; padding:5px 9px; background:#eff6ff; color:var(--primary); border-radius:20px; font-size:11px; font-weight:600; }
+.badge.igot{ background:#fff7ed; color:#c2410c; }
+.badge.level{ background:#f0fdf4; color:#15803d; margin-left:6px; }
+.course-body h3{ margin:12px 0 8px; font-size:16px; }
+.course-body p{ color:var(--muted); font-size:13px; line-height:1.5; min-height:40px; }
+.course-meta{ display:flex; gap:10px; color:var(--muted); font-size:12px; margin:8px 0; }
+.progress-container{ margin:15px 0; }
+.progress-label{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+.progress-bar{ height:7px; background:#e2e8f0; border-radius:20px; overflow:hidden; }
+.progress-fill{ height:100%; background:linear-gradient(90deg,#2563eb,#7c3aed); border-radius:20px; transition:width .8s cubic-bezier(.4,0,.2,1); animation:progressGlow 2.5s ease-in-out infinite; }
+.course-actions{ display:flex; gap:8px; }
+.secondary-btn{ border:1px solid var(--border); background:white; color:var(--text); padding:12px 14px; border-radius:10px; cursor:pointer; font-size:13px; font-weight:600; transition:.2s; }
+.secondary-btn:hover{ border-color:var(--primary); color:var(--primary); }
+
+.skill-row{ margin-bottom:20px; }
+.skill-info{ display:flex; justify-content:space-between; margin-bottom:7px; }
+.skill-info span:first-child{ font-weight:600; }
+.skill-score{ color:var(--muted); font-size:13px; }
+.gap-bar{ height:10px; background:#e2e8f0; border-radius:20px; overflow:hidden; }
+.gap-fill{ height:100%; border-radius:20px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+.high{ background:linear-gradient(90deg,#dc2626,#ef4444); } .medium{ background:linear-gradient(90deg,#f59e0b,#fbbf24); } .low{ background:linear-gradient(90deg,#16a34a,#4ade80); }
+
+.ai-card{ background:linear-gradient(135deg,#f5f3ff,#eff6ff); border:1px solid #ddd6fe; }
+.ai-label{ color:#6d28d9; font-size:12px; font-weight:bold; margin-bottom:10px; }
+.recommendation{ display:flex; gap:15px; padding:15px 0; border-bottom:1px solid #e2e8f0; transition:.2s; }
+.recommendation:last-child{ border-bottom:none; }
+.recommendation:hover{ background:#f8fafc; transform:translateX(3px); }
+.rec-icon{ min-width:45px; height:45px; border-radius:12px; background:white; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.rec-content{ flex:1; }
+.rec-content h4{ font-size:14px; margin-bottom:5px; }
+.rec-content p{ color:var(--muted); font-size:12px; }
+.rec-action{ color:var(--primary); font-size:12px; font-weight:bold; cursor:pointer; }
+
+.quiz-layout{ max-width:850px; margin:auto; }
+.quiz-question{ font-size:20px; font-weight:600; line-height:1.5; margin:18px 0; }
+.option{ border:1px solid var(--border); border-radius:12px; padding:15px; margin:10px 0; cursor:pointer; transition:.2s; }
+.option:hover{ border-color:var(--primary); background:#eff6ff; transform:translateX(4px); }
+.option.selected{ border-color:var(--primary); background:#eff6ff; }
+.option.correct{ background:#dcfce7; border-color:#16a34a; animation:bounceIn .4s ease; }
+.option.wrong{ background:#fee2e2; border-color:#dc2626; }
+.option.locked{ pointer-events:none; }
+
+.upload-box{ border:2px dashed #cbd5e1; border-radius:18px; padding:50px 20px; text-align:center; cursor:pointer; transition:.2s; }
+.upload-box:hover{ border-color:var(--primary); background:#f8fbff; }
+.upload-box.dragover{ border-color:var(--primary); background:#eff6ff; transform:scale(1.01); }
+.upload-icon{ font-size:50px; margin-bottom:15px; }
+.upload-box h3{ margin-bottom:8px; }
+.upload-box p{ color:var(--muted); margin-bottom:20px; }
+
+.analytics-grid{ display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+.chart{ height:260px; display:flex; align-items:end; gap:15px; padding:20px 10px; border-bottom:1px solid var(--border); }
+.chart-bar{ flex:1; background:linear-gradient(to top,#2563eb,#8b5cf6); border-radius:7px 7px 0 0; min-height:20px; position:relative; transition:height 1s cubic-bezier(.4,0,.2,1); }
+.chart-bar span{ position:absolute; top:-22px; width:100%; text-align:center; font-size:11px; }
+.chart-labels{ display:flex; justify-content:space-around; color:var(--muted); font-size:11px; }
+
+.profile-header{ display:flex; align-items:center; gap:20px; }
+.profile-avatar{ width:80px; height:80px; background:linear-gradient(135deg,#2563eb,#7c3aed); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:30px; font-weight:bold; }
+.profile-info h2{ margin-bottom:5px; }
+.profile-info p{ color:var(--muted); }
+
+.spinner{ width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:white; border-radius:50%; display:inline-block; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+.skeleton{ background:linear-gradient(90deg,#eef1f6 0px,#f8fafc 40px,#eef1f6 80px); background-size:600px; animation:shimmer 1.4s linear infinite; border-radius:8px; }
+
+.toast{ position:fixed; right:25px; bottom:25px; background:#111827; color:white; padding:15px 20px; border-radius:10px; opacity:0; pointer-events:none; transform:translateY(20px); transition:.3s; z-index:999; max-width:320px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+.toast.show{ opacity:1; transform:translateY(0); animation:slideInRight .3s ease; }
+.toast.error{ background:#7f1d1d; }
+.toast.success{ background:#14532d; }
+
+.modal{ position:fixed; inset:0; background:rgba(15,23,42,.55); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+.modal.show{ display:flex; }
+.modal-content{ background:white; width:100%; max-width:650px; max-height:90vh; overflow-y:auto; border-radius:18px; padding:25px; animation:popIn .3s ease; }
+.modal-header{ display:flex; justify-content:space-between; margin-bottom:20px; }
+.close{ cursor:pointer; font-size:22px; }
+
+.mobile-menu{ display:none; font-size:24px; cursor:pointer; }
+@media(max-width:1000px){ .stats-grid{grid-template-columns:repeat(2,1fr);} .course-grid{grid-template-columns:repeat(2,1fr);} .two-column,.analytics-grid{grid-template-columns:1fr;} }
+@media(max-width:750px){
+  .sidebar{ transform:translateX(-100%); transition:.3s; }
+  .sidebar.open{ transform:translateX(0); }
+  .main{ margin-left:0; }
+  .mobile-menu{ display:block; }
+  .topbar{ padding:0 15px; }
+  .search{ display:none; }
+  .content{ padding:18px; }
+  .welcome{ flex-direction:column; align-items:flex-start; gap:20px; }
+  .stats-grid{ grid-template-columns:1fr 1fr; }
+  .course-grid{ grid-template-columns:1fr; }
+  .login-container{ grid-template-columns:1fr; }
+  .login-left{ display:none; }
+  .login-right{ padding:35px 25px; }
+  .form-row{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginPage" class="login-page">
+  <div class="login-container">
+    <div class="login-left">
+      <div class="logo-big float-icon">🧠</div>
+      <h1>SkillIntel</h1>
+      <p>AI-powered competency development platform for India's Official Statistical System — identify skill gaps and build personalized learning journeys.</p>
+      <div class="features">
+        <div class="feature"><div class="feature-icon">🤖</div><span>AI-powered skill gap analysis</span></div>
+        <div class="feature"><div class="feature-icon">🎯</div><span>Personalized learning paths</span></div>
+        <div class="feature"><div class="feature-icon">📝</div><span>Automatic AI quiz generation</span></div>
+        <div class="feature"><div class="feature-icon">📊</div><span>Competency progress analytics</span></div>
+        <div class="feature"><div class="feature-icon">🇮🇳</div><span>iGOT Karmayogi ecosystem ready</span></div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="auth-toggle">
+        <button id="showLoginBtn" class="active" onclick="switchAuthTab('login')">Sign In</button>
+        <button id="showRegisterBtn" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div id="authError" class="auth-error"></div>
+
+      <form id="loginForm" class="auth-form active">
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Sign in to continue your learning journey.</p>
+        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.gov.in" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter your password" required></div>
+        <button type="submit" class="primary-btn full-btn" id="loginSubmitBtn">Sign In</button>
+        <p class="demo-text">Demo login: demo@skillintel.gov.in / Demo@123</p>
+      </form>
+
+      <form id="registerForm" class="auth-form">
+        <h2>Create Your Account</h2>
+        <p class="subtitle">Register to get a real, personalized SkillIntel profile.</p>
+        <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="e.g. Priya Sharma" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.gov.in" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Department</label><input type="text" id="regDepartment" placeholder="e.g. National Statistical Office"></div>
+          <div class="form-group"><label>Designation</label><input type="text" id="regDesignation" placeholder="e.g. Statistical Officer"></div>
+        </div>
+        <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="At least 6 characters" required></div>
+        <button type="submit" class="primary-btn full-btn" id="registerSubmitBtn">Create Account</button>
+        <p class="demo-text">Already have an account? <a href="#" onclick="switchAuthTab('login');return false;" style="color:var(--primary);font-weight:600;">Sign in</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><div class="sidebar-logo-icon">🧠</div><h2>SkillIntel</h2></div>
+  <div class="sidebar-section-title">Main</div>
+  <div class="nav-item active" data-page="dashboard">📊<span>Dashboard</span></div>
+  <div class="nav-item" data-page="learning">📚<span>Learning Hub</span></div>
+  <div class="nav-item" data-page="igot">🇮🇳<span>iGOT Karmayogi</span></div>
+  <div class="nav-item" data-page="skills">🧠<span>Skill Gap Analysis</span></div>
+  <div class="nav-item" data-page="quiz">📝<span>AI Quiz Generator</span></div>
+  <div class="sidebar-section-title">Progress</div>
+  <div class="nav-item" data-page="analytics">📈<span>Analytics</span></div>
+  <div class="nav-item" data-page="achievements">🏆<span>Achievements</span></div>
+  <div class="sidebar-section-title">Account</div>
+  <div class="nav-item" data-page="profile">👤<span>Profile</span></div>
+  <div class="nav-item logout" id="logoutBtn">🚪<span>Logout</span></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="mobile-menu" id="mobileMenu">☰</div>
+  <div class="search"><span class="search-icon">🔎</span><input type="text" id="globalSearch" placeholder="Search courses, skills..." oninput="applyCourseFilters()"></div>
+  <div class="topbar-right">
+    <div class="notification">🔔<span class="notification-dot"></span></div>
+    <div class="user-profile">
+      <div class="avatar" id="topAvatar">U</div>
+      <div><strong id="topUserName">User</strong><small style="display:block;color:#64748b;" id="topUserRole">Learner</small></div>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+
+<section class="page active" id="dashboard">
+  <div class="welcome">
+    <div>
+      <h1>Welcome back, <span id="welcomeName">Learner</span> 👋</h1>
+      <p>Continue building your competencies with AI-powered personalized learning.</p>
+    </div>
+    <div class="ai-status"><strong>🤖 AI Active</strong><small>Learning path optimized</small></div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-top"><span>Competency Score</span><div class="stat-icon">🎯</div></div><div class="stat-number" id="scoreStat">—</div><div class="stat-label">Average across all skills</div></div>
+    <div class="stat-card"><div class="stat-top"><span>Active Courses</span><div class="stat-icon">📚</div></div><div class="stat-number" id="coursesStat">—</div><div class="stat-label">In progress</div></div>
+    <div class="stat-card"><div class="stat-top"><span>AI Quizzes</span><div class="stat-icon">📝</div></div><div class="stat-number" id="quizStat">—</div><div class="stat-label" id="quizAvgLabel">Average score</div></div>
+    <div class="stat-card"><div class="stat-top"><span>Latest Assessment</span><div class="stat-icon">✅</div></div><div class="stat-number" id="assessStat">—</div><div class="stat-label">Skill assessment score</div></div>
+  </div>
+
+  <div class="two-column">
+    <div>
+      <div class="card">
+        <div class="card-header"><h3>Continue Learning</h3><span class="view-link" data-page-link="learning">View All</span></div>
+        <div id="continueLearningList"></div>
+      </div>
+      <div class="card ai-card">
+        <div class="ai-label">✨ AI PERSONALIZED RECOMMENDATION</div>
+        <div id="topRecommendation"><h3 style="margin-bottom:10px;">Loading your recommendation…</h3></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-header"><h3>Competency Overview</h3><span class="view-link" onclick="navigate('skills')">Analyze</span></div>
+        <div id="dashboardSkillRows"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="learning">
+  <div class="page-title"><h1>Learning Hub 📚</h1><p>Courses drawn live from your SkillIntel catalogue, including iGOT Karmayogi content.</p></div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;">
+      <input id="courseSearch" placeholder="Search courses..." oninput="applyCourseFilters()">
+      <select id="categoryFilter" onchange="applyCourseFilters()">
+        <option value="all">All Skill Areas</option>
+      </select>
+      <select id="levelFilter" onchange="applyCourseFilters()">
+        <option value="all">All Levels</option>
+        <option value="Beginner">Beginner</option>
+        <option value="Intermediate">Intermediate</option>
+        <option value="Advanced">Advanced</option>
+      </select>
+    </div>
+  </div>
+  <div class="course-grid" id="courseGrid"></div>
+</section>
+
+<section class="page" id="igot">
+  <div class="page-title"><h1>iGOT Karmayogi 🇮🇳</h1><p>Courses from India's Official Statistical System learning ecosystem, linked to your SkillIntel profile.</p></div>
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
+    <div>
+      <h3 style="margin-bottom:6px;">Account status</h3>
+      <p style="color:#64748b;font-size:14px;" id="igotStatusText">Not connected — connect to sync progress both ways.</p>
+    </div>
+    <button class="primary-btn" onclick="connectIGOT()" id="igotConnectBtn">Connect iGOT Account</button>
+  </div>
+  <div class="course-grid" id="igotGrid"></div>
+</section>
+
+<section class="page" id="skills">
+  <div class="page-title"><h1>AI Skill Gap Analysis 🧠</h1><p>AI analyzes your assessment results and identifies competency areas that require improvement.</p></div>
+  <div class="card ai-card">
+    <div class="ai-label">🤖 AI ANALYSIS</div>
+    <h2 style="margin-bottom:10px;" id="overallCompetencyText">Overall Competency: —</h2>
+    <p style="color:#64748b;" id="strongestGapText">Loading your competency analysis…</p>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Competency Assessment</h3><button class="primary-btn" onclick="startAssessment()">📝 Take Skill Assessment</button></div>
+    <div id="skillsFullList"></div>
+  </div>
+  <div class="card" id="assessmentCard" style="display:none;">
+    <div class="card-header"><h3>Skill Assessment</h3><span id="assessProgress"></span></div>
+    <div id="assessQuestionContainer"></div>
+    <button class="primary-btn" id="assessNextBtn" onclick="assessNext()">Next →</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>🎯 AI-Generated Learning Path</h3></div>
+    <div id="learningPathList"></div>
+  </div>
+</section>
+
+<section class="page" id="quiz">
+  <div class="page-title"><h1>AI Quiz & MCQ Generator 📝</h1><p>Upload learning material and let AI generate real competency-based questions from it.</p></div>
+  <div class="card">
+    <div class="upload-box" id="uploadBox">
+      <div class="upload-icon">📄</div>
+      <h3>Upload Learning Material</h3>
+      <p>TXT, Markdown, CSV or PDF files</p>
+      <input type="file" id="fileInput" hidden accept=".txt,.md,.csv,.pdf">
+      <button class="primary-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+      <p id="fileName" style="margin-top:15px;"></p>
+    </div>
+    <div style="margin-top:25px;" id="quizGenControls" style="display:none;">
+      <div class="form-group"><label>Number of Questions</label><select id="questionCount"><option value="5">5 Questions</option><option value="8">8 Questions</option><option value="10">10 Questions</option></select></div>
+      <button class="primary-btn full-btn" id="generateQuizBtn" onclick="generateQuizFromMaterial()" disabled>🤖 Generate AI Quiz</button>
+    </div>
+  </div>
+  <div id="quizArea" style="display:none;">
+    <div class="quiz-layout">
+      <div class="card">
+        <div class="card-header"><h3 id="quizTitle">AI Generated Quiz</h3><span id="quizProgress">Question 1</span></div>
+        <div id="questionContainer"></div>
+        <button class="primary-btn" id="nextQuestionBtn" onclick="nextQuizQuestion()">Next Question →</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="pastQuizzesCard">
+    <div class="card-header"><h3>Your Past Quizzes</h3></div>
+    <div id="pastQuizzesList"><p style="color:#64748b;font-size:14px;">No quizzes generated yet.</p></div>
+  </div>
+</section>
+
+<section class="page" id="analytics">
+  <div class="page-title"><h1>Learning Analytics 📈</h1><p>Track your learning performance and competency growth.</p></div>
+  <div class="analytics-grid">
+    <div class="card">
+      <div class="card-header"><h3>Skill Score Distribution</h3></div>
+      <div class="chart" id="analyticsChart"></div>
+      <div class="chart-labels" id="analyticsChartLabels"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Overall Progress</h3></div>
+      <div style="text-align:center;padding:25px;"><div style="font-size:50px;font-weight:bold;color:#2563eb;" id="analyticsOverall">—</div><p style="color:#64748b;">Competency Score</p></div>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:15px 0;">
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Active Courses</span><strong id="analyticsCourses">—</strong></p>
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Quiz Attempts</span><strong id="analyticsQuizzes">—</strong></p>
+      <p style="display:flex;justify-content:space-between;margin:12px 0;"><span>Quiz Average</span><strong id="analyticsQuizAvg">—</strong></p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Competency Growth</h3></div>
+    <div id="analyticsSkillRows"></div>
+  </div>
+</section>
+
+<section class="page" id="achievements">
+  <div class="page-title"><h1>Achievements 🏆</h1><p>Milestones earned throughout your learning journey.</p></div>
+  <div class="course-grid" id="achievementsGrid"></div>
+</section>
+
+<section class="page" id="profile">
+  <div class="page-title"><h1>My Profile 👤</h1><p>Your real SkillIntel account details.</p></div>
+  <div class="card"><div class="profile-header"><div class="profile-avatar" id="profileAvatar">U</div><div class="profile-info"><h2 id="profileName">—</h2><p id="profileRoleLine">Learner</p></div></div></div>
+  <div class="card">
+    <div class="card-header"><h3>Personal Information</h3></div>
+    <div class="form-group"><label>Full Name</label><input id="profileFullName" disabled></div>
+    <div class="form-group"><label>Email</label><input id="profileEmail" type="email" disabled></div>
+    <div class="form-group"><label>Department</label><input id="profileDepartment" disabled></div>
+    <div class="form-group"><label>Designation</label><input id="profileDesignation" disabled></div>
+    <p style="color:#94a3b8;font-size:12px;margin-top:8px;">Profile details are set at registration. Contact your administrator to change them.</p>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>🇮🇳 iGOT Karmayogi Integration</h3></div>
+    <p style="color:#64748b;line-height:1.7;margin-bottom:15px;">Your SkillIntel profile can be connected with the iGOT Karmayogi ecosystem to synchronize relevant learning resources, competency data and recommended training.</p>
+    <button class="primary-btn" onclick="navigate('igot')">Go to iGOT Karmayogi</button>
+  </div>
+</section>
+
+</div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="courseModal">
+  <div class="modal-content">
+    <div class="modal-header"><h2 id="modalCourseTitle">Course</h2><span class="close" onclick="closeModal()">✕</span></div>
+    <p style="color:#64748b;line-height:1.7;margin-bottom:20px;" id="modalCourseDesc"></p>
+    <div id="modalModules"></div>
+    <div class="progress-container">
+      <div class="progress-label"><span>Your progress</span><span id="modalProgressLabel">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="modalProgressFill" style="width:0%"></div></div>
+    </div>
+    <button class="primary-btn full-btn" onclick="completeCourse()">Mark Course as Completed</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SKILLINTEL — connected to the real Flask/SQLite backend.
+   All data (auth, courses, skills, quizzes) comes from /api/*
+========================================================= */
+const API = ""; // same-origin: Flask serves this file, so relative paths work
+let TOKEN = localStorage.getItem("skillintelToken") || "";
+let CURRENT_USER = null;
+let ALL_COURSES = [];
+let IGOT_COURSES = [];
+let ALL_SKILLS = [];
+let activeCourseId = null;
+let assessQuestions = [];
+let assessAnswers = [];
+let assessIndex = 0;
+let quizId = null;
+let quizQuestions = [];
+let quizIndex = 0;
+let quizAnswers = {};
+let uploadedMaterialId = null;
+let igotConnected = localStorage.getItem("skillintelIgot") === "1";
+
+/* ---------- API HELPER ---------- */
+async function api(path, options = {}) {
+  const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+  if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
+  const res = await fetch(API + path, Object.assign({}, options, { headers }));
+  let data;
+  try { data = await res.json(); } catch (e) { data = {}; }
+  if (!res.ok) {
+    throw new Error(data.error || "Something went wrong. Please try again.");
+  }
+  return data;
+}
+
+/* ---------- AUTH TABS ---------- */
+function switchAuthTab(which) {
+  document.getElementById("authError").classList.remove("show");
+  document.getElementById("showLoginBtn").classList.toggle("active", which === "login");
+  document.getElementById("showRegisterBtn").classList.toggle("active", which === "register");
+  document.getElementById("loginForm").classList.toggle("active", which === "login");
+  document.getElementById("registerForm").classList.toggle("active", which === "register");
+}
+function showAuthError(msg) {
+  const el = document.getElementById("authError");
+  el.textContent = msg;
+  el.classList.add("show");
+}
+
+/* ---------- LOGIN ---------- */
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const btn = document.getElementById("loginSubmitBtn");
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  document.getElementById("authError").classList.remove("show");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Signing in...';
+  try {
+    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+    TOKEN = data.token;
+    localStorage.setItem("skillintelToken", TOKEN);
+    CURRENT_USER = data.user;
+    await loadApplication();
+    showToast("Welcome back, " + CURRENT_USER.name + "!", "success");
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sign In";
+  }
+});
+
+/* ---------- REGISTER ---------- */
+document.getElementById("registerForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const btn = document.getElementById("registerSubmitBtn");
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const department = document.getElementById("regDepartment").value.trim();
+  const designation = document.getElementById("regDesignation").value.trim();
+  const password = document.getElementById("regPassword").value;
+  document.getElementById("authError").classList.remove("show");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creating account...';
+  try {
+    const data = await api("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password, department, designation })
+    });
+    TOKEN = data.token;
+    localStorage.setItem("skillintelToken", TOKEN);
+    CURRENT_USER = data.user;
+    await loadApplication();
+    showToast("Account created. Welcome, " + CURRENT_USER.name + "!", "success");
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Create Account";
+  }
+});
+
+/* ---------- LOAD APP AFTER LOGIN ---------- */
+async function loadApplication() {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  const savedName = CURRENT_USER.name || "Learner";
+  const initial = savedName.charAt(0).toUpperCase();
+  document.getElementById("welcomeName").textContent = savedName.split(" ")[0];
+  document.getElementById("topUserName").textContent = savedName;
+  document.getElementById("topUserRole").textContent = CURRENT_USER.role || "Learner";
+  document.getElementById("topAvatar").textContent = initial;
+  document.getElementById("profileAvatar").textContent = initial;
+  document.getElementById("profileName").textContent = savedName;
+  document.getElementById("profileRoleLine").textContent = (CURRENT_USER.role || "Learner") + " • " + (CURRENT_USER.department || "");
+  document.getElementById("profileFullName").value = savedName;
+  document.getElementById("profileEmail").value = CURRENT_USER.email || "";
+  document.getElementById("profileDepartment").value = CURRENT_USER.department || "";
+  document.getElementById("profileDesignation").value = CURRENT_USER.designation || "";
+
+  await Promise.all([loadDashboard(), loadCourses(), loadIgotCourses()]);
+  updateIgotStatus();
+  navigate("dashboard");
+}
+
+/* ---------- TRY RESTORE SESSION ---------- */
+(async function tryRestoreSession() {
+  if (!TOKEN) return;
+  try {
+    const data = await api("/api/me");
+    CURRENT_USER = data.user;
+    await loadApplication();
+  } catch (err) {
+    TOKEN = "";
+    localStorage.removeItem("skillintelToken");
+  }
+})();
+
+/* ---------- LOGOUT ---------- */
+document.getElementById("logoutBtn").addEventListener("click", async function () {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch (e) {}
+  localStorage.removeItem("skillintelToken");
+  TOKEN = "";
+  CURRENT_USER = null;
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginPage").style.display = "flex";
+  document.getElementById("loginForm").reset();
+  showToast("You have been logged out.");
+});
+
+/* ---------- NAVIGATION ---------- */
+document.querySelectorAll(".nav-item[data-page]").forEach(item => {
+  item.addEventListener("click", function () { navigate(this.getAttribute("data-page")); });
+});
+function navigate(pageName) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const target = document.getElementById(pageName);
+  if (target) target.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+  const selected = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+  if (selected) selected.classList.add("active");
+  document.getElementById("sidebar").classList.remove("open");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.querySelectorAll("[data-page-link]").forEach(link => {
+  link.addEventListener("click", function () { navigate(this.getAttribute("data-page-link")); });
+});
+const mobileMenu = document.getElementById("mobileMenu");
+if (mobileMenu) mobileMenu.addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
+
+/* ---------- DASHBOARD ---------- */
+async function loadDashboard() {
+  try {
+    const data = await api("/api/dashboard");
+    ALL_SKILLS = data.skills || [];
+    const stats = data.stats || {};
+    document.getElementById("scoreStat").textContent = (stats.skill_score ?? 0) + "%";
+    document.getElementById("coursesStat").textContent = stats.courses_active ?? 0;
+    document.getElementById("quizStat").textContent = stats.quiz_attempts ?? 0;
+    document.getElementById("quizAvgLabel").textContent = (stats.quiz_average ?? 0) + "% average score";
+    document.getElementById("assessStat").textContent = stats.assessment_score != null ? stats.assessment_score + "%" : "Not taken";
+
+    renderDashboardSkillRows(data.skills || []);
+    renderContinueLearning(data.progress || []);
+    renderTopRecommendation(data.recommendations || []);
+    renderFullSkillList(data.skills || []);
+    renderLearningPath(data.recommendations || []);
+    renderOverallCompetency(data.skills || [], data.gaps || []);
+    renderAnalytics(data);
+    renderAchievements(stats);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+function renderDashboardSkillRows(skills) {
+  const top = skills.slice(0, 4);
+  document.getElementById("dashboardSkillRows").innerHTML = top.map(s => skillRowHTML(s)).join("");
+}
+function skillRowHTML(s) {
+  const cls = s.score >= 70 ? "low" : s.score >= 50 ? "medium" : "high";
+  return `<div class="skill-row">
+    <div class="skill-info"><span>${s.name}</span><span class="skill-score">${s.score}%</span></div>
+    <div class="gap-bar"><div class="gap-fill ${cls}" style="width:${s.score}%"></div></div>
+  </div>`;
+}
+function renderFullSkillList(skills) {
+  document.getElementById("skillsFullList").innerHTML = skills.map(s => {
+    const label = s.score >= 70 ? "Strong" : s.score >= 50 ? "Needs Improvement" : "Critical Gap";
+    const cls = s.score >= 70 ? "low" : s.score >= 50 ? "medium" : "high";
+    return `<div class="skill-row">
+      <div class="skill-info"><span>${s.name}</span><span class="skill-score">${s.score}% — ${label}</span></div>
+      <div class="gap-bar"><div class="gap-fill ${cls}" style="width:${s.score}%"></div></div>
+    </div>`;
+  }).join("");
+}
+function renderOverallCompetency(skills, gaps) {
+  const avg = skills.length ? Math.round(skills.reduce((a, s) => a + s.score, 0) / skills.length) : 0;
+  document.getElementById("overallCompetencyText").textContent = "Overall Competency: " + avg + "%";
+  const strongest = skills.slice().sort((a, b) => b.score - a.score)[0];
+  const weakest = gaps[0];
+  let text = "Keep completing assessments to build your competency profile.";
+  if (strongest && weakest) {
+    text = `Your strongest competency is ${strongest.name}. Your largest development opportunity is ${weakest.name}.`;
+  }
+  document.getElementById("strongestGapText").textContent = text;
+}
+function renderTopRecommendation(recs) {
+  const el = document.getElementById("topRecommendation");
+  if (!recs.length) {
+    el.innerHTML = `<h3 style="margin-bottom:10px;">You're on track!</h3><p style="color:#64748b;font-size:14px;">No major skill gaps detected right now. Keep learning to stay ahead.</p>`;
+    return;
+  }
+  const r = recs[0];
+  el.innerHTML = `<h3 style="margin-bottom:10px;">Focus on ${r.skill}</h3>
+    <p style="color:#64748b;font-size:14px;line-height:1.6;">${r.reason}</p>
+    <button class="primary-btn" style="margin-top:15px;" onclick="openCourseById(${r.course.id})">Start Recommended Training</button>`;
+}
+function renderLearningPath(recs) {
+  const el = document.getElementById("learningPathList");
+  if (!recs.length) { el.innerHTML = `<p style="color:#64748b;font-size:14px;">No gaps detected — great work!</p>`; return; }
+  el.innerHTML = recs.slice(0, 5).map((r, i) => {
+    const priority = r.gap >= 25 ? "HIGH" : r.gap >= 12 ? "MEDIUM" : "LOW";
+    return `<div class="recommendation">
+      <div class="rec-icon">${i + 1}</div>
+      <div class="rec-content"><h4>${r.course.title}</h4><p>${r.skill} • Gap: ${r.gap}%</p></div>
+      <span class="badge" onclick="openCourseById(${r.course.id})" style="cursor:pointer;">${priority}</span>
+    </div>`;
+  }).join("");
+}
+function renderContinueLearning(progressList) {
+  const el = document.getElementById("continueLearningList");
+  const inProgress = progressList.filter(p => p.percent > 0 && p.percent < 100);
+  if (!inProgress.length) {
+    el.innerHTML = `<p style="color:#64748b;font-size:14px;">No courses in progress yet. Visit the Learning Hub to get started.</p>`;
+    return;
+  }
+  el.innerHTML = inProgress.slice(0, 3).map(p => `
+    <div class="recommendation">
+      <div class="rec-icon">📘</div>
+      <div class="rec-content">
+        <h4>${p.title}</h4>
+        <p>${p.percent}% completed • ${p.provider}</p>
+        <div class="progress-container"><div class="progress-bar"><div class="progress-fill" style="width:${p.percent}%"></div></div></div>
+      </div>
+      <span class="rec-action" onclick="navigate('learning')">Continue</span>
+    </div>`).join("");
+}
+function renderAnalytics(data) {
+  const stats = data.stats || {};
+  document.getElementById("analyticsOverall").textContent = (stats.skill_score ?? 0) + "%";
+  document.getElementById("analyticsCourses").textContent = stats.courses_active ?? 0;
+  document.getElementById("analyticsQuizzes").textContent = stats.quiz_attempts ?? 0;
+  document.getElementById("analyticsQuizAvg").textContent = (stats.quiz_average ?? 0) + "%";
+  const skills = data.skills || [];
+  document.getElementById("analyticsChart").innerHTML = skills.map(s =>
+    `<div class="chart-bar" style="height:${Math.max(s.score, 4)}%"><span>${s.score}%</span></div>`).join("");
+  document.getElementById("analyticsChartLabels").innerHTML = skills.map(s =>
+    `<span title="${s.name}">${s.name.split(" ")[0]}</span>`).join("");
+  document.getElementById("analyticsSkillRows").innerHTML = skills.map(s => skillRowHTML(s)).join("");
+}
+function renderAchievements(stats) {
+  const items = [
+    { icon: "📚", earned: (stats.courses_active ?? 0) >= 1, title: "First Step", desc: "Started your first course." },
+    { icon: "🥇", earned: (stats.courses_active ?? 0) >= 3, title: "Fast Learner", desc: "Actively progressing in 3+ courses." },
+    { icon: "🎯", earned: (stats.skill_score ?? 0) >= 70, title: "Skill Builder", desc: "Reached a 70%+ average competency score." },
+    { icon: "🧠", earned: (stats.quiz_attempts ?? 0) >= 3, title: "AI Explorer", desc: "Completed 3+ AI-generated quizzes." },
+    { icon: "✅", earned: stats.assessment_score != null, title: "Self-Aware", desc: "Completed a skill assessment." },
+    { icon: "📈", earned: (stats.quiz_average ?? 0) >= 80, title: "High Achiever", desc: "80%+ average quiz score." }
+  ];
+  document.getElementById("achievementsGrid").innerHTML = items.map(a => `
+    <div class="card" style="text-align:center;opacity:${a.earned ? 1 : .45};">
+      <div style="font-size:55px;">${a.icon}</div>
+      <h3 style="margin:15px 0 8px;">${a.title}</h3>
+      <p style="color:#64748b;">${a.desc}</p>
+      <p style="margin-top:8px;font-size:12px;font-weight:700;color:${a.earned ? '#16a34a' : '#94a3b8'};">${a.earned ? "UNLOCKED" : "LOCKED"}</p>
+    </div>`).join("");
+}
+
+/* ---------- COURSES (real data from backend) ---------- */
+async function loadCourses() {
+  try {
+    const data = await api("/api/courses");
+    ALL_COURSES = data.courses || [];
+    const categories = [...new Set(ALL_COURSES.map(c => c.skill))];
+    const catSelect = document.getElementById("categoryFilter");
+    catSelect.innerHTML = `<option value="all">All Skill Areas</option>` +
+      categories.map(c => `<option value="${c}">${c}</option>`).join("");
+    renderCourseGrid();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+function getCourseProgressMap() {
+  return JSON.parse(localStorage.getItem("skillintelProgressMap") || "{}");
+}
+function setCourseProgress(id, value) {
+  const map = getCourseProgressMap();
+  map[id] = value;
+  localStorage.setItem("skillintelProgressMap", JSON.stringify(map));
+  api("/api/progress", { method: "POST", body: JSON.stringify({ course_id: id, percent: value }) }).catch(() => {});
+}
+function getCourseProgress(id) {
+  const map = getCourseProgressMap();
+  return map.hasOwnProperty(id) ? map[id] : 0;
+}
+function courseCardHTML(c) {
+  const pct = getCourseProgress(c.id);
+  const btnLabel = pct >= 100 ? "Review Course" : (pct > 0 ? "Continue Learning" : "Start Course");
+  const sourceBadge = c.source === "iGOT" ? `<span class="badge igot">iGOT Karmayogi</span>` : `<span class="badge">${c.provider}</span>`;
+  return `<div class="course-card" data-skill="${c.skill}" data-level="${c.level}" data-name="${c.title.toLowerCase()}">
+    <div class="course-image">${courseIcon(c.skill)}</div>
+    <div class="course-body">
+      ${sourceBadge}<span class="badge level">${c.level}</span>
+      <h3>${c.title}</h3>
+      <p>${c.description}</p>
+      <div class="course-meta"><span>⏱ ${c.duration}</span><span>🏷 ${c.skill}</span></div>
+      <div class="progress-container">
+        <div class="progress-label"><span>Progress</span><span>${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="course-actions">
+        <button class="primary-btn full-btn" onclick="openCourseById(${c.id})">${btnLabel}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function courseIcon(skill) {
+  const map = {
+    "Data Collection & Survey Design": "📋", "Statistical Analysis": "📈", "Data Visualization": "📊",
+    "Data Quality": "✅", "Python for Statistics": "🐍", "SQL & Data Management": "🗄️",
+    "Official Statistics": "🏛️", "AI & Responsible Use": "🤖"
+  };
+  return map[skill] || "📘";
+}
+function renderCourseGrid() {
+  document.getElementById("courseGrid").innerHTML = ALL_COURSES.map(courseCardHTML).join("");
+  applyCourseFilters();
+}
+function applyCourseFilters() {
+  const search = (document.getElementById("courseSearch")?.value || document.getElementById("globalSearch")?.value || "").toLowerCase();
+  const cat = document.getElementById("categoryFilter")?.value || "all";
+  const level = document.getElementById("levelFilter")?.value || "all";
+  document.querySelectorAll("#courseGrid .course-card").forEach(card => {
+    const matchesSearch = !search || card.dataset.name.includes(search);
+    const matchesCat = cat === "all" || card.dataset.skill === cat;
+    const matchesLevel = level === "all" || card.dataset.level === level;
+    card.style.display = (matchesSearch && matchesCat && matchesLevel) ? "" : "none";
+  });
+}
+
+/* ---------- iGOT ---------- */
+async function loadIgotCourses() {
+  try {
+    const data = await api("/api/igot/courses");
+    IGOT_COURSES = data.courses || [];
+    renderIgotGrid();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+function renderIgotGrid() {
+  document.getElementById("igotGrid").innerHTML = IGOT_COURSES.map(c => `
+    <div class="course-card">
+      <div class="course-image">${courseIcon(c.skill)}</div>
+      <div class="course-body">
+        <span class="badge igot">iGOT Karmayogi</span><span class="badge level">${c.level}</span>
+        <h3>${c.title}</h3>
+        <p>${c.description}</p>
+        <div class="course-meta"><span>⏱ ${c.duration}</span><span>🏷 ${c.skill}</span></div>
+        <div class="course-actions">
+          <button class="primary-btn full-btn" onclick="openIgotCourse(${c.id}, '${(c.url || '#').replace(/'/g, "")}')">${igotConnected ? "Open in iGOT" : "Connect & Enroll"}</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+function connectIGOT() {
+  igotConnected = true;
+  localStorage.setItem("skillintelIgot", "1");
+  updateIgotStatus();
+  showToast("iGOT Karmayogi account connected.", "success");
+}
+function openIgotCourse(id, url) {
+  if (!igotConnected) { connectIGOT(); return; }
+  if (url && url !== "#") window.open(url, "_blank");
+  else showToast("This iGOT course link isn't configured yet.");
+}
+function updateIgotStatus() {
+  const btn = document.getElementById("igotConnectBtn");
+  const text = document.getElementById("igotStatusText");
+  if (igotConnected) {
+    btn.textContent = "Connected ✓";
+    text.textContent = "Connected — progress syncs with your Karmayogi Bharat profile.";
+  } else {
+    btn.textContent = "Connect iGOT Account";
+    text.textContent = "Not connected — connect to sync progress both ways.";
+  }
+  renderIgotGrid();
+}
+
+/* ---------- COURSE MODAL ---------- */
+function openCourseById(id) {
+  const course = ALL_COURSES.find(c => c.id === id);
+  if (!course) return;
+  activeCourseId = id;
+  const pct = getCourseProgress(id);
+  document.getElementById("modalCourseTitle").textContent = course.title;
+  document.getElementById("modalCourseDesc").textContent = course.description;
+  document.getElementById("modalModules").innerHTML = `
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 1</h3><p style="color:#64748b;">Introduction and fundamental concepts</p></div>
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 2</h3><p style="color:#64748b;">Practical applications and examples</p></div>
+    <div class="card" style="background:#f8fafc;"><h3 style="margin-bottom:10px;">Module 3</h3><p style="color:#64748b;">Assessment and competency evaluation</p></div>`;
+  document.getElementById("modalProgressLabel").textContent = pct + "%";
+  document.getElementById("modalProgressFill").style.width = pct + "%";
+  document.getElementById("courseModal").classList.add("show");
+}
+function closeModal() { document.getElementById("courseModal").classList.remove("show"); }
+function completeCourse() {
+  if (!activeCourseId) return;
+  setCourseProgress(activeCourseId, 100);
+  renderCourseGrid();
+  loadDashboard();
+  closeModal();
+  showToast("Course marked as completed!", "success");
+}
+
+/* ---------- SKILL ASSESSMENT ---------- */
+async function startAssessment() {
+  try {
+    const data = await api("/api/assessment/questions");
+    assessQuestions = data.questions || [];
+    assessAnswers = new Array(assessQuestions.length).fill(-1);
+    assessIndex = 0;
+    document.getElementById("assessmentCard").style.display = "block";
+    renderAssessQuestion();
+    document.getElementById("assessmentCard").scrollIntoView({ behavior: "smooth" });
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+function renderAssessQuestion() {
+  const q = assessQuestions[assessIndex];
+  document.getElementById("assessProgress").textContent = `Question ${assessIndex + 1} of ${assessQuestions.length}`;
+  document.getElementById("assessQuestionContainer").innerHTML = `
+    <div class="quiz-question">${q.q}</div>
+    ${q.options.map((opt, i) => `<div class="option ${assessAnswers[assessIndex] === i ? 'selected' : ''}" onclick="selectAssessOption(${i})">${opt}</div>`).join("")}`;
+  document.getElementById("assessNextBtn").textContent = assessIndex === assessQuestions.length - 1 ? "Submit Assessment" : "Next →";
+}
+function selectAssessOption(i) {
+  assessAnswers[assessIndex] = i;
+  renderAssessQuestion();
+}
+async function assessNext() {
+  if (assessAnswers[assessIndex] === -1) { showToast("Please select an answer."); return; }
+  if (assessIndex < assessQuestions.length - 1) {
+    assessIndex++;
+    renderAssessQuestion();
+  } else {
+    try {
+      const result = await api("/api/assessment/submit", { method: "POST", body: JSON.stringify({ answers: assessAnswers }) });
+      showToast(`Assessment complete — ${result.correct}/${result.total} correct (${result.score}%).`, "success");
+      document.getElementById("assessmentCard").style.display = "none";
+      await loadDashboard();
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+}
+
+/* ---------- MATERIAL UPLOAD + AI QUIZ ---------- */
+const uploadBox = document.getElementById("uploadBox");
+document.getElementById("fileInput").addEventListener("change", async function () {
+  const file = this.files[0];
+  if (!file) return;
+  document.getElementById("fileName").textContent = "Uploading: " + file.name;
+  const fd = new FormData();
+  fd.append("file", file);
+  try {
+    const headers = {};
+    if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
+    const res = await fetch("/api/materials", { method: "POST", body: fd, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Upload failed.");
+    uploadedMaterialId = data.material_id;
+    document.getElementById("fileName").textContent = `✓ ${data.filename} (${data.characters} characters, detected skill: ${data.skill})`;
+    document.getElementById("quizGenControls").style.display = "block";
+    document.getElementById("generateQuizBtn").disabled = false;
+    showToast("Material uploaded successfully.", "success");
+  } catch (err) {
+    document.getElementById("fileName").textContent = "";
+    showToast(err.message, "error");
+  }
+});
+["dragover", "dragleave", "drop"].forEach(evt => {
+  uploadBox.addEventListener(evt, e => {
+    e.preventDefault();
+    if (evt === "dragover") uploadBox.classList.add("dragover");
+    else uploadBox.classList.remove("dragover");
+    if (evt === "drop" && e.dataTransfer.files[0]) {
+      document.getElementById("fileInput").files = e.dataTransfer.files;
+      document.getElementById("fileInput").dispatchEvent(new Event("change"));
+    }
+  });
+});
+
+async function generateQuizFromMaterial() {
+  if (!uploadedMaterialId) { showToast("Upload a file first."); return; }
+  const count = parseInt(document.getElementById("questionCount").value, 10);
+  const btn = document.getElementById("generateQuizBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating...';
+  try {
+    const data = await api("/api/quiz/generate", { method: "POST", body: JSON.stringify({ material_id: uploadedMaterialId, count }) });
+    quizId = data.quiz_id;
+    await loadQuizAndStart(quizId, data.title);
+    loadPastQuizzes();
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🤖 Generate AI Quiz";
+  }
+}
+async function loadQuizAndStart(id, title) {
+  const data = await api(`/api/quizzes/${id}`);
+  quizQuestions = data.questions || [];
+  quizIndex = 0;
+  quizAnswers = {};
+  document.getElementById("quizTitle").textContent = title || data.quiz.title;
+  document.getElementById("quizArea").style.display = "block";
+  renderQuizQuestion();
+  document.getElementById("quizArea").scrollIntoView({ behavior: "smooth" });
+  showToast("AI quiz generated from your material.", "success");
+}
+function renderQuizQuestion() {
+  const q = quizQuestions[quizIndex];
+  document.getElementById("quizProgress").textContent = `Question ${quizIndex + 1} of ${quizQuestions.length}`;
+  const opts = [["A", q.option_a], ["B", q.option_b], ["C", q.option_c], ["D", q.option_d]];
+  document.getElementById("questionContainer").innerHTML = `
+    <div class="quiz-question">${q.question}</div>
+    ${opts.map(([label, text]) => `<div class="option ${quizAnswers[q.id] === label ? 'selected' : ''}" onclick="selectQuizOption('${q.id}','${label}')">${text}</div>`).join("")}`;
+  document.getElementById("nextQuestionBtn").textContent = quizIndex === quizQuestions.length - 1 ? "Submit Quiz" : "Next Question →";
+}
+function selectQuizOption(qid, label) {
+  quizAnswers[qid] = label;
+  renderQuizQuestion();
+}
+async function nextQuizQuestion() {
+  const q = quizQuestions[quizIndex];
+  if (!quizAnswers[q.id]) { showToast("Please select an answer."); return; }
+  if (quizIndex < quizQuestions.length - 1) {
+    quizIndex++;
+    renderQuizQuestion();
+  } else {
+    try {
+      const result = await api(`/api/quizzes/${quizId}/submit`, { method: "POST", body: JSON.stringify({ answers: quizAnswers }) });
+      showToast(`Quiz complete — ${result.score}/${result.total} correct (${result.percent}%). ${result.feedback}`, "success");
+      document.getElementById("quizArea").style.display = "none";
+      loadDashboard();
+      loadPastQuizzes();
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+}
+async function loadPastQuizzes() {
+  try {
+    const data = await api("/api/quizzes");
+    const list = data.quizzes || [];
+    const el = document.getElementById("pastQuizzesList");
+    if (!list.length) { el.innerHTML = `<p style="color:#64748b;font-size:14px;">No quizzes generated yet.</p>`; return; }
+    el.innerHTML = list.map(q => `
+      <div class="recommendation">
+        <div class="rec-icon">📝</div>
+        <div class="rec-content"><h4>${q.title}</h4><p>From: ${q.filename || "material"} • ${new Date(q.created_at).toLocaleDateString()}</p></div>
+        <span class="rec-action" onclick="loadQuizAndStart(${q.id}, '${q.title.replace(/'/g, "")}')">Retake</span>
+      </div>`).join("");
+  } catch (err) { /* silent */ }
+}
+
+/* ---------- ASSISTANT (built-in AI chat, uses /api/assistant) ---------- */
+async function askAssistant(message) {
+  try {
+    const data = await api("/api/assistant", { method: "POST", body: JSON.stringify({ message }) });
+    return data.reply;
+  } catch (err) {
+    return err.message;
+  }
+}
+
+/* ---------- TOAST ---------- */
+function showToast(msg, type = "") {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.className = "toast show" + (type ? " " + type : "");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+}
+</script>
+</body>
+</html>
+
